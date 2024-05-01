@@ -34,28 +34,53 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
-st.set_page_config(
-    page_title="Movie Recommendation System",
-    page_icon="🎬",
-    layout="wide",
-    initial_sidebar_state="expanded"
+st.title('Movie Recommendation System')
+
+# Custom CSS for styling
+st.markdown(
+    """
+    <style>
+    .sidebar .sidebar-content {
+        background-color: #f0f2f6;
+        color: #1e272e;
+        border-radius: 10px;
+        padding: 20px;
+    }
+    .sidebar .sidebar-content .stButton {
+        background-color: #7ed6df;
+        color: #ffffff;
+        border-radius: 5px;
+        padding: 0.375rem 0.75rem;
+    }
+    .sidebar .sidebar-content .stButton:hover {
+        background-color: #3a3e4b;
+    }
+    .main .block-container {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+    """
 )
 
 # Sidebar
-with st.sidebar:
-    st.markdown("## Sidebar")
-    selected_movie = st.selectbox('Choose a movie:', movies_df['title'].values, index=0)
-    st.markdown("---")
-    if st.button('Get Recommendations'):
-        recommendations = get_recommendations(selected_movie)
-        if recommendations:
-            st.markdown("### Recommendations")
-            for i, movie in enumerate(recommendations):
-                st.write(f"{i+1}. {movie}")
-        else:
-            st.warning("No recommendations found for this movie.")
+st.sidebar.title('Sidebar')
+selected_movie = st.sidebar.selectbox('Choose a movie:', movies_df['title'].values)
+if st.sidebar.button('Get Recommendations'):
+    recommendations = get_recommendations(selected_movie)
+    if recommendations:
+        st.sidebar.subheader('Recommendations')
+        for i, movie in enumerate(recommendations):
+            st.sidebar.write(f"{i+1}. {movie}")
+    else:
+        st.sidebar.warning("No recommendations found for this movie.")
 
 # Main content
-st.title('Movie Recommendation System')
-st.markdown("---")
-st.markdown("Welcome to the Movie Recommendation System! Select a movie from the sidebar and click the button to get recommendations based on similar genres.")
+st.markdown(
+    """
+    Welcome to the Movie Recommendation System! Select a movie from the sidebar 
+    and click the button to get recommendations based on similar genres.
+    """
+)
