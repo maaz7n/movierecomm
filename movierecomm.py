@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
+import os
 
 # Load the movie dataset
 @st.cache
@@ -46,7 +47,7 @@ def set_png_as_page_bg(png_file):
     page_bg_img = '''
     <style>
     body {
-    background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg,%s");
+    background-image: url("data:image/png;base64,%s");
     background-size: cover;
     }
     </style>
@@ -55,7 +56,13 @@ def set_png_as_page_bg(png_file):
     st.markdown(page_bg_img, unsafe_allow_html=True)
     return
 
-set_png_as_page_bg('background.png')
+# Get the directory path of the current script
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Specify the full path to the background image file
+background_image_path = os.path.join(current_dir, 'background.png')
+
+set_png_as_page_bg(background_image_path)
 
 # Streamlit UI
 st.title('Movie Recommendation System')
