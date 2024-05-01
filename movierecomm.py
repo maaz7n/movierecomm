@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-import base64
+from surprise import Dataset, Reader, SVD
+from surprise.model_selection import train_test_split
 
 # Function to load the movie dataset
 @st.cache
@@ -31,43 +32,35 @@ def main():
     # Streamlit UI
     st.title('Movie Recommendation System')
 
-    # Select a movie
-    selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
+    # Load Surprise dataset
+    reader = Reader(rating_scale=(0.5, 5))
+    data = Dataset.load_from_df(movies_df[['userId', 'movieId', 'rating']], reader)
 
-    # Get recommendations
-    if st.button('Get Recommendations'):
-        recommendations = get_recommendations(selected_movie, movies_df)
-        if recommendations:
-            st.write("### Recommendations")
-            for movie in recommendations:
-                st.write(f"- {movie}")
-        else:
-            st.write("No recommendations found for this movie.")
+    # Split the data into train and test sets
+    trainset, testset = train_test_split(data, test_size=0.2)
 
-# Function to calculate similarity based on genres
-def calculate_similarity(movie_genres_1, movie_genres_2):
-    if not movie_genres_1 or not movie_genres_2:
-        return 0  # If any of the genres is empty, return 0 similarity
-    try:
-        genres_1 = set(movie_genres_1.split('|'))
-        genres_2 = set(movie_genres_2.split('|'))
-    except AttributeError:
-        return 0  # If genres are not in the expected format, return 0 similarity
-    intersection = genres_1.intersection(genres_2)
-    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
-    return similarity
+    # Use SVD algorithm
+    algo = SVD()
 
-# Function to get movie recommendations
-def get_recommendations(movie_title, movies_df, threshold=0.2):
-    movie_row = movies_df[movies_df['title'] == movie_title]
-    movie_genres = movie_row['genres'].values[0]
-    recommendations = []
-    for index, row in movies_df.iterrows():
-        if row['title'] != movie_title:
-            similarity = calculate_similarity(movie_genres, row['genres'])
-            if similarity >= threshold:
-                recommendations.append(row['title'])
-    return recommendations
+    # Train the algorithm on the trainset
+    algo.fit(trainset)
+
+    # Select a user
+    selected_user = st.selectbox('Select a user:', movies_df['userId'].unique())
+
+    # Get top recommendations for the selected user
+    top_n = 10
+    recommendations = {}
+    for movie_id in movies_df['movieId'].unique():
+        predicted_rating = algo.predict(selected_user, movie_id).est
+        recommendations[movie_id] = predicted_rating
+
+    top_recommendations = sorted(recommendations.items(), key=lambda x: x[1], reverse=True)[:top_n]
+
+    st.write("### Top Recommendations:")
+    for movie_id, rating in top_recommendations:
+        movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].values[0]
+        st.write(f"- {movie_title} (Predicted Rating: {rating:.2f})")
 
 if __name__ == "__main__":
     main()
