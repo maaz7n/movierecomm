@@ -60,5 +60,7 @@ if st.button('Get Recommendations'):
                         st.write("Poster not available for this movie.")
                 else:
                     st.write("Poster information not available for this movie.")
+            else:
+                st.write("Poster information not available for this movie.")
     else:
         st.warning("No recommendations found for this movie.")
