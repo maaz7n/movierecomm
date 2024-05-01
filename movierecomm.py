@@ -34,7 +34,12 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
-st.title('Movie Recommendation System')
+st.set_page_config(
+    page_title="Movie Recommendation System",
+    page_icon="🎬",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # Custom CSS for styling
 st.markdown(
@@ -66,21 +71,20 @@ st.markdown(
 )
 
 # Sidebar
-st.sidebar.title('Sidebar')
-selected_movie = st.sidebar.selectbox('Choose a movie:', movies_df['title'].values)
-if st.sidebar.button('Get Recommendations'):
-    recommendations = get_recommendations(selected_movie)
-    if recommendations:
-        st.sidebar.subheader('Recommendations')
-        for i, movie in enumerate(recommendations):
-            st.sidebar.write(f"{i+1}. {movie}")
-    else:
-        st.sidebar.warning("No recommendations found for this movie.")
+with st.sidebar:
+    st.markdown("## Sidebar")
+    selected_movie = st.selectbox('Choose a movie:', movies_df['title'].values, index=0)
+    st.markdown("---")
+    if st.button('Get Recommendations'):
+        recommendations = get_recommendations(selected_movie)
+        if recommendations:
+            st.markdown("### Recommendations")
+            for i, movie in enumerate(recommendations):
+                st.write(f"{i+1}. {movie}")
+        else:
+            st.warning("No recommendations found for this movie.")
 
 # Main content
-st.markdown(
-    """
-    Welcome to the Movie Recommendation System! Select a movie from the sidebar 
-    and click the button to get recommendations based on similar genres.
-    """
-)
+st.title('Movie Recommendation System')
+st.markdown("---")
+st.markdown("Welcome to the Movie Recommendation System! Select a movie from the sidebar and click the button to get recommendations based on similar genres.")
