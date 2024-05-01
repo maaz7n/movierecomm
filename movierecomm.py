@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
-import requests
-from PIL import Image
+import base64
 
 # Load the movie dataset
 @st.cache
@@ -35,8 +34,14 @@ def get_recommendations(movie_title, threshold=0.2):
                 recommendations.append(row['title'])
     return recommendations
 
+# Encode background image as base64 string
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
 # Set background image (replace 'movie_poster.jpg' with actual file path)
-background_image = Image.open('movie.jpg')
+background_image = get_base64_of_bin_file('movie.jpg')
 st.markdown(
     f"""
     <style>
