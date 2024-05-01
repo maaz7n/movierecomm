@@ -35,9 +35,6 @@ def get_recommendations(movie_title, threshold=0.2):
                 recommendations.append(row['title'])
     return recommendations
 
-# Streamlit UI
-st.set_page_config(page_title="Movie Recommendation System", layout="wide")
-
 # Set background image (replace 'movie_poster.jpg' with actual file path)
 background_image = Image.open('movie.jpg')
 st.markdown(
