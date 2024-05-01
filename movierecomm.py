@@ -38,7 +38,7 @@ st.markdown(
     """
     <style>
     .reportview-container {
-        background: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
+        background url:("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
         background-size: cover;
     }
     </style>
