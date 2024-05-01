@@ -1,15 +1,6 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
 import base64
-import io
-
-# Function to convert image to base64 string
-def image_to_base64(image):
-    buffered = io.BytesIO()
-    image.save(buffered, format="JPEG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    return img_str
 
 # Load the movie dataset
 @st.cache
@@ -44,29 +35,32 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
-background_image = Image.open('movie.jpg')
+background_image = open("background.jpg", "rb").read()
+background_image_encoded = base64.b64encode(background_image).decode()
 
 st.markdown(
-    """
+    f"""
     <style>
-    .reportview-container {
-        background: url('data:image/jpeg;base64,{}');
+    .reportview-container {{
+        background: url('data:image/jpeg;base64,{background_image_encoded}') no-repeat center center fixed;
         background-size: cover;
-    }
+    }}
     </style>
-    """.format(image_to_base64(background_image)),
+    """,
     unsafe_allow_html=True
 )
 
 st.markdown(
     """
     <style>
-    .sidebar .sidebar-content {
+    .sidebar .sidebar-content {{
         background-color: rgba(255, 255, 255, 0.5);
         padding: 20px;
         border-radius: 10px;
         width: 50%;
-    }
+        margin-top: 50%;
+        transform: translateY(-50%);
+    }}
     </style>
     """,
     unsafe_allow_html=True
