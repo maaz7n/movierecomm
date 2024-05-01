@@ -34,28 +34,27 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
-st.set_page_config(
-    page_title="Movie Recommendation System",
-    layout="wide"
-)
-
 st.title('Movie Recommendation System')
 
-st.sidebar.title('Sidebar')
+# Center the sidebar
+col1, col2, col3 = st.columns([1, 4, 1])
+with col2:
+    st.sidebar.title('Sidebar')
 
-st.sidebar.header('Select a Movie')
-selected_movie = st.sidebar.selectbox(
-    'Choose a movie:',
-    movies_df['title'].values
-)
+    st.sidebar.header('Select a Movie')
+    selected_movie = st.sidebar.selectbox(
+        'Choose a movie:',
+        movies_df['title'].values
+    )
 
-if st.sidebar.button('Get Recommendations'):
-    st.subheader(f'Recommendations for **{selected_movie}**')
-    recommendations = get_recommendations(selected_movie)
-    if recommendations:
-        for i, movie in enumerate(recommendations):
-            st.write(f"{i+1}. {movie}")
-    else:
-        st.warning("No recommendations found for this movie.")
+    if st.sidebar.button('Get Recommendations'):
+        st.subheader(f'Recommendations for **{selected_movie}**')
+        recommendations = get_recommendations(selected_movie)
+        if recommendations:
+            for i, movie in enumerate(recommendations):
+                st.write(f"{i+1}. {movie}")
+        else:
+            st.warning("No recommendations found for this movie.")
 
+# Main content area
 st.markdown('<h1 style="text-align: center;">Main Content Below</h1>', unsafe_allow_html=True)
