@@ -34,8 +34,8 @@ def get_recommendations(movie_title, threshold=0.2):
                 recommendations.append(row['title'])
     return recommendations
 
-# Streamlit UI
-    @st.cache(allow_output_mutation=True)
+# Function to convert image to base64
+@st.cache(allow_output_mutation=True)
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
@@ -46,7 +46,7 @@ def set_png_as_page_bg(png_file):
     page_bg_img = '''
     <style>
     body {
-    background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
+    background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg,%s");
     background-size: cover;
     }
     </style>
@@ -57,6 +57,7 @@ def set_png_as_page_bg(png_file):
 
 set_png_as_page_bg('background.png')
 
+# Streamlit UI
 st.title('Movie Recommendation System')
 
 selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
