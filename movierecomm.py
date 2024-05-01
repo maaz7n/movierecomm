@@ -41,10 +41,9 @@ st.markdown(
     .reportview-container {
         background: url('https://images.purexbox.com/6c4ae5b99340c/imdb-tv-app-arrives-on-xbox-includes-thousands-of-free-movies.large.jpg') no-repeat center center fixed;
         background-size: cover;
-    }
-    .sidebar .sidebar-content {
-        margin-top: 50%;
-        transform: translateY(-50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     </style>
     """,
