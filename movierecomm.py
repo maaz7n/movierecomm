@@ -42,7 +42,8 @@ st.markdown(
         background-size: cover;
     }
     </style>
-    """
+    """,
+    unsafe_allow_html=True
 )
 
 st.title('Movie Recommendation System')
