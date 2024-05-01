@@ -8,7 +8,8 @@ import io
 def image_to_base64(image):
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
-    return base64.b64encode(buffered.getvalue()).decode()
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    return img_str
 
 # Load the movie dataset
 @st.cache
