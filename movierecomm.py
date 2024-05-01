@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import base64
+from PIL import Image
 
 # Load the movie dataset
 @st.cache
@@ -34,21 +34,18 @@ def get_recommendations(movie_title, threshold=0.2):
                 recommendations.append(row['title'])
     return recommendations
 
-# Encode background image as base64 string
-def get_base64_of_bin_file(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
-
-# Set background image (replace 'movie_poster.jpg' with actual file path)
-background_image = get_base64_of_bin_file("movie.jpg")
+# Streamlit UI
 st.markdown(
-    f"""
+    """
     <style>
-    .reportview-container {{
-        background: url('data:image/png;base64,{background_image}') center center no-repeat;
+    .reportview-container {
+        background: url('https://images.purexbox.com/6c4ae5b99340c/imdb-tv-app-arrives-on-xbox-includes-thousands-of-free-movies.large.jpg') no-repeat center center fixed;
         background-size: cover;
-    }}
+    }
+    .sidebar .sidebar-content {
+        margin-top: 50%;
+        transform: translateY(-50%);
+    }
     </style>
     """,
     unsafe_allow_html=True
