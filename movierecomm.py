@@ -39,7 +39,7 @@ def get_recommendations(movie_title, threshold=0.2):
 st.set_page_config(page_title="Movie Recommendation System", layout="wide")
 
 # Set background image (replace 'movie_poster.jpg' with actual file path)
-background_image = Image.open('movie_poster.jpg')
+background_image = Image.open('movie.jpg')
 st.markdown(
     f"""
     <style>
