@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
+import requests
 
 # Load the movie dataset
 @st.cache
@@ -34,9 +35,16 @@ def get_recommendations(movie_title, threshold=0.2):
                 recommendations.append(row['title'])
     return recommendations
 
+# Function to fetch image from URL and encode it to base64
+def image_to_base64(url):
+    response = requests.get(url)
+    image = response.content
+    image_base64 = base64.b64encode(image).decode()
+    return image_base64
+
 # Streamlit UI
-background_image = open("background.jpg", "rb").read()
-background_image_encoded = base64.b64encode(background_image).decode()
+background_image_url = "https://github.com/maaz7n/movierecomm/blob/main/background.jpg"
+background_image_encoded = image_to_base64(background_image_url)
 
 st.markdown(
     f"""
