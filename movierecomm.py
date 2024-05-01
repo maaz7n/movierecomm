@@ -46,7 +46,7 @@ def set_png_as_page_bg(png_file):
     page_bg_img = '''
     <style>
     body {
-    background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg,%s");
+    background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
     background-size: cover;
     }
     </style>
