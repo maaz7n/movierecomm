@@ -21,7 +21,7 @@ def calculate_similarity(movie_genres_1, movie_genres_2):
     return similarity
 
 # Function to get movie recommendations
-def get_recommendations(movie_title, threshold=0.2):
+def get_recommendations(movie_title, movies_df, threshold=0.2):
     movie_row = movies_df[movies_df['title'] == movie_title]
     movie_genres = movie_row['genres'].values[0]
     recommendations = []
@@ -68,7 +68,7 @@ def main():
 
     # Get recommendations
     if st.button('Get Recommendations'):
-        recommendations = get_recommendations(selected_movie)
+        recommendations = get_recommendations(selected_movie, movies_df)
         if recommendations:
             st.write("### Recommendations")
             for movie in recommendations:
