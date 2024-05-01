@@ -34,6 +34,17 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
+st.markdown(
+    """
+    <style>
+    .reportview-container {
+        background: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
+        background-size: cover;
+    }
+    </style>
+    """
+)
+
 st.title('Movie Recommendation System')
 
 selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
