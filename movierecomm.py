@@ -33,16 +33,17 @@ def get_recommendations(movie_title, threshold=0.2):
                 recommendations.append(row['title'])
     return recommendations
 
-# Streamlit UI with CSS for background image
-st.write(
-    f"""
+# Streamlit UI
+st.markdown(
+    """
     <style>
-    .reportview-container {{
+    .reportview-container {
         background: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg") no-repeat center center fixed;
         background-size: cover;
-    }}
+    }
     </style>
-    """
+    """,
+    unsafe_allow_html=True
 )
 
 st.title('Movie Recommendation System')
