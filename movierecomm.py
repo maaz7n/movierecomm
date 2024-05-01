@@ -1,14 +1,11 @@
 import streamlit as st
 import pandas as pd
 import base64
-import os
 
-# Load the movie dataset
+# Function to load the movie dataset
 @st.cache
 def load_data():
     return pd.read_csv("movies.csv")
-
-movies_df = load_data()
 
 # Function to calculate similarity based on genres
 def calculate_similarity(movie_genres_1, movie_genres_2):
@@ -42,35 +39,42 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-def set_png_as_page_bg(png_file):
-    bin_str = get_base64_of_bin_file(png_file)
+# Function to set background image from URL
+def set_background_image(url):
     page_bg_img = '''
     <style>
-    body {
-    background-image: url("data:image/png;base64,%s");
-    background-size: cover;
+    .stApp {
+        background-image: url("%s");
+        background-size: cover;
     }
     </style>
-    ''' % bin_str
-    
+    ''' % url
     st.markdown(page_bg_img, unsafe_allow_html=True)
-    return
 
-# Get the directory path of the current script
-current_dir = os.path.dirname(os.path.realpath(__file__))
+# Main function
+def main():
+    # Load data
+    movies_df = load_data()
 
-# Specify the full path to the background image file
-background_image_path = os.path.join(current_dir, 'background.png')
+    # Set background image from URL
+    background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg"  # Replace with your URL
+    set_background_image(background_image_url)
 
-set_png_as_page_bg(background_image_path)
+    # Streamlit UI
+    st.title('Movie Recommendation System')
 
-# Streamlit UI
-st.title('Movie Recommendation System')
+    # Select a movie
+    selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
 
-selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
+    # Get recommendations
+    if st.button('Get Recommendations'):
+        recommendations = get_recommendations(selected_movie)
+        if recommendations:
+            st.write("### Recommendations")
+            for movie in recommendations:
+                st.write(f"- {movie}")
+        else:
+            st.write("No recommendations found for this movie.")
 
-if st.button('Get Recommendations'):
-    recommendations = get_recommendations(selected_movie)
-    st.write("### Recommendations")
-    for movie in recommendations:
-        st.write(f"- {movie}")
+if __name__ == "__main__":
+    main()
