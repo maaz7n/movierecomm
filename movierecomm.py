@@ -34,50 +34,21 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
-background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg"
-st.markdown(
-    f"""
-    <style>
-    .reportview-container {{
-        background: url('{background_image_url}') no-repeat center center fixed;
-        background-size: cover;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <style>
-    .sidebar .sidebar-content {{
-        background-color: rgba(255, 255, 255, 0.5);
-        padding: 20px;
-        border-radius: 10px;
-        width: 50%;
-        margin-top: 50%;
-        transform: translateY(-50%);
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
+st.set_page_config(
+    page_title="Movie Recommendation System",
+    layout="wide"
 )
 
 st.title('Movie Recommendation System')
 
-st.markdown("""
-    Welcome to the Movie Recommendation System! Select a movie from the dropdown menu 
-    and click the button to get recommendations based on similar genres.
-""")
+st.sidebar.title('Sidebar')
 
-# Sidebar with movie selection
 st.sidebar.header('Select a Movie')
 selected_movie = st.sidebar.selectbox(
     'Choose a movie:',
     movies_df['title'].values
 )
 
-# Main content area for recommendations
 if st.sidebar.button('Get Recommendations'):
     st.subheader(f'Recommendations for **{selected_movie}**')
     recommendations = get_recommendations(selected_movie)
@@ -86,3 +57,5 @@ if st.sidebar.button('Get Recommendations'):
             st.write(f"{i+1}. {movie}")
     else:
         st.warning("No recommendations found for this movie.")
+
+st.markdown('<h1 style="text-align: center;">Main Content Below</h1>', unsafe_allow_html=True)
