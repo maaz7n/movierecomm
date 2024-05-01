@@ -35,15 +35,28 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
+background_image = Image.open('movie.jpg')
+
 st.markdown(
     """
     <style>
     .reportview-container {
-        background: url('https://images.purexbox.com/6c4ae5b99340c/imdb-tv-app-arrives-on-xbox-includes-thousands-of-free-movies.large.jpg') no-repeat center center fixed;
+        background: url('data:image/jpeg;base64,{}');
         background-size: cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    }
+    </style>
+    """.format(image_to_base64(background_image)),
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <style>
+    .sidebar .sidebar-content {
+        background-color: rgba(255, 255, 255, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+        width: 50%;
     }
     </style>
     """,
