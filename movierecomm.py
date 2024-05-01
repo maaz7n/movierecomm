@@ -43,7 +43,7 @@ def image_to_base64(url):
     return image_base64
 
 # Streamlit UI
-background_image_url = "background.jpg"
+background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg"
 background_image_encoded = image_to_base64(background_image_url)
 
 st.markdown(
