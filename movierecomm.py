@@ -49,13 +49,16 @@ if st.button('Get Recommendations'):
         for i, movie in enumerate(recommendations):
             st.write(f"{i+1}. {movie}")
             # For better visualization, let's try to display movie posters (if available)
-            movie_row = movies_df[movies_df['title'] == movie]
-            if not movie_row.empty:
-                poster_url = movie_row['poster_url'].values[0]
-                if poster_url:
-                    image = Image.open(requests.get(poster_url, stream=True).raw)
-                    st.image(image, caption=movie, use_column_width=True)
+            if 'poster_url' in movies_df.columns:  # Check if poster_url column exists
+                movie_row = movies_df[movies_df['title'] == movie]
+                if not movie_row.empty and 'poster_url' in movie_row.columns:
+                    poster_url = movie_row['poster_url'].values[0]
+                    if poster_url:
+                        image = Image.open(requests.get(poster_url, stream=True).raw)
+                        st.image(image, caption=movie, use_column_width=True)
+                    else:
+                        st.write("Poster not available for this movie.")
                 else:
-                    st.write("Poster not available for this movie.")
+                    st.write("Poster information not available for this movie.")
     else:
         st.warning("No recommendations found for this movie.")
