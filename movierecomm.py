@@ -41,7 +41,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 # Set background image (replace 'movie_poster.jpg' with actual file path)
-background_image = get_base64_of_bin_file('movie.jpg')
+background_image = get_base64_of_bin_file("movie.jpg")
 st.markdown(
     f"""
     <style>
