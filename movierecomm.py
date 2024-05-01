@@ -37,8 +37,8 @@ def get_recommendations(movie_title, threshold=0.2):
 st.markdown(
     """
     <style>
-    .reportview-container {
-        background url:("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
+    body {
+        background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
         background-size: cover;
     }
     </style>
