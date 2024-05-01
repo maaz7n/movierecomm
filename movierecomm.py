@@ -1,6 +1,14 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
+import base64
+import io
+
+# Function to convert image to base64 string
+def image_to_base64(image):
+    buffered = io.BytesIO()
+    image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode()
 
 # Load the movie dataset
 @st.cache
