@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from PIL import Image
 
 # Load the movie dataset
 @st.cache
@@ -42,10 +43,19 @@ selected_movie = st.selectbox(
 )
 
 if st.button('Get Recommendations'):
-    st.write("### Recommendations for", selected_movie)
+    st.subheader(f'Recommendations for **{selected_movie}**')
     recommendations = get_recommendations(selected_movie)
     if recommendations:
         for i, movie in enumerate(recommendations):
             st.write(f"{i+1}. {movie}")
+            # For better visualization, let's try to display movie posters (if available)
+            movie_row = movies_df[movies_df['title'] == movie]
+            if not movie_row.empty:
+                poster_url = movie_row['poster_url'].values[0]
+                if poster_url:
+                    image = Image.open(requests.get(poster_url, stream=True).raw)
+                    st.image(image, caption=movie, use_column_width=True)
+                else:
+                    st.write("Poster not available for this movie.")
     else:
-        st.write("No recommendations found for this movie.")
+        st.warning("No recommendations found for this movie.")
