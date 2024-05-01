@@ -1,42 +1,51 @@
 import streamlit as st
 import pandas as pd
-import difflib
 
-# Load data
+# Load the movie dataset
 @st.cache
 def load_data():
-    return pd.read_csv("/Users/mohammedmazin/Downloads/movieRecomm.py")  # Update with your file path
+    return pd.read_csv("movies.csv")
 
-movies_data = load_data()
+movies_df = load_data()
 
-# Preprocess data
-selected_features = ['genres', 'keywords', 'tagline', 'cast', 'director']
-for feature in selected_features:
-    movies_data[feature] = movies_data[feature].fillna('')
-movies_data['combined_features'] = movies_data['genres'] + ' ' + movies_data['keywords'] + ' ' + movies_data['tagline'] + ' ' + movies_data['cast'] + ' ' + movies_data['director']
+# Function to calculate similarity based on genres
+def calculate_similarity(movie_genres_1, movie_genres_2):
+    if not movie_genres_1 or not movie_genres_2:
+        return 0  # If any of the genres is empty, return 0 similarity
+    try:
+        genres_1 = set(movie_genres_1.split('|'))
+        genres_2 = set(movie_genres_2.split('|'))
+    except AttributeError:
+        return 0  # If genres are not in the expected format, return 0 similarity
+    intersection = genres_1.intersection(genres_2)
+    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
+    return similarity
 
-# Recommendation function
-def recommend_movies(movie_name):
-    find_close_match = difflib.get_close_matches(movie_name, movies_data['title'].tolist(), n=1)
-    close_match = find_close_match[0] if find_close_match else None
-    if close_match:
-        similar_movies = movies_data[movies_data['title'] == close_match]['combined_features']
-        similar_movies = similar_movies.apply(lambda x: x.split())
-        similar_movies = similar_movies.explode().value_counts().index.tolist()
-        return similar_movies
-    else:
-        return []
+# Function to get movie recommendations
+def get_recommendations(movie_title, threshold=0.2):
+    movie_row = movies_df[movies_df['title'] == movie_title]
+    movie_genres = movie_row['genres'].values[0]
+    recommendations = []
+    for index, row in movies_df.iterrows():
+        if row['title'] != movie_title:
+            similarity = calculate_similarity(movie_genres, row['genres'])
+            if similarity >= threshold:
+                recommendations.append(row['title'])
+    return recommendations
 
-# Streamlit app
+# Streamlit UI
 st.title('Movie Recommendation System')
 
-# User input
-movie_name = st.text_input('Enter your favorite movie name:')
-if movie_name:
-    recommendations = recommend_movies(movie_name)
+selected_movie = st.selectbox(
+    'Select a movie:',
+    movies_df['title'].values
+)
+
+if st.button('Get Recommendations'):
+    st.write("### Recommendations for", selected_movie)
+    recommendations = get_recommendations(selected_movie)
     if recommendations:
-        st.subheader('Recommended Movies:')
-        for i, movie in enumerate(recommendations[:10], 1):
-            st.write(f"{i}. {movie}")
+        for i, movie in enumerate(recommendations):
+            st.write(f"{i+1}. {movie}")
     else:
-        st.write('No close match found for the entered movie name.')
+        st.write("No recommendations found for this movie.")
