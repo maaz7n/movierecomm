@@ -36,35 +36,42 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Streamlit UI
+st.set_page_config(page_title="Movie Recommendation System", layout="wide")
+
+# Set background image (replace 'movie_poster.jpg' with actual file path)
+background_image = Image.open('movie_poster.jpg')
+st.markdown(
+    f"""
+    <style>
+    .reportview-container {{
+        background: url('data:image/png;base64,{background_image}') center center no-repeat;
+        background-size: cover;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title('Movie Recommendation System')
 
-selected_movie = st.selectbox(
-    'Select a movie:',
+st.markdown("""
+    Welcome to the Movie Recommendation System! Select a movie from the dropdown menu 
+    and click the button to get recommendations based on similar genres.
+""")
+
+# Sidebar with movie selection
+st.sidebar.header('Select a Movie')
+selected_movie = st.sidebar.selectbox(
+    'Choose a movie:',
     movies_df['title'].values
 )
 
-if st.button('Get Recommendations'):
+# Main content area for recommendations
+if st.sidebar.button('Get Recommendations'):
     st.subheader(f'Recommendations for **{selected_movie}**')
     recommendations = get_recommendations(selected_movie)
     if recommendations:
         for i, movie in enumerate(recommendations):
             st.write(f"{i+1}. {movie}")
-            # For better visualization, let's try to display movie posters (if available)
-            if 'poster_url' in movies_df.columns:  # Check if poster_url column exists
-                movie_row = movies_df[movies_df['title'] == movie]
-                if not movie_row.empty and 'poster_url' in movie_row.columns:
-                    poster_url = movie_row['poster_url'].values[0]
-                    if poster_url:
-                        try:
-                            image = Image.open(requests.get(poster_url, stream=True).raw)
-                            st.image(image, caption=movie, use_column_width=True)
-                        except Exception as e:
-                            st.write(f"Failed to load poster for {movie}: {e}")
-                    else:
-                        st.write("Poster not available for this movie.")
-                else:
-                    st.write("Poster information not available for this movie.")
-            else:
-                st.write("Poster information not available for this movie.")
     else:
         st.warning("No recommendations found for this movie.")
