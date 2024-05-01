@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import requests
 from PIL import Image
 
 # Load the movie dataset
@@ -54,8 +55,11 @@ if st.button('Get Recommendations'):
                 if not movie_row.empty and 'poster_url' in movie_row.columns:
                     poster_url = movie_row['poster_url'].values[0]
                     if poster_url:
-                        image = Image.open(requests.get(poster_url, stream=True).raw)
-                        st.image(image, caption=movie, use_column_width=True)
+                        try:
+                            image = Image.open(requests.get(poster_url, stream=True).raw)
+                            st.image(image, caption=movie, use_column_width=True)
+                        except Exception as e:
+                            st.write(f"Failed to load poster for {movie}: {e}")
                     else:
                         st.write("Poster not available for this movie.")
                 else:
