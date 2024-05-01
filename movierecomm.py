@@ -34,8 +34,7 @@ def get_recommendations(movie_title, threshold=0.2):
     return recommendations
 
 # Custom CSS for styling
-st.markdown(
-    """
+st.markdown("""
     <style>
     .sidebar .sidebar-content {
         background-color: #f0f2f6;
@@ -59,8 +58,7 @@ st.markdown(
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     }
     </style>
-    """
-)
+""")
 
 # Sidebar
 with st.sidebar:
