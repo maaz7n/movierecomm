@@ -25,13 +25,6 @@ def load_data():
 def filter_movies(movies, search_query):
     return movies[movies['title'].str.contains(search_query, case=False)]
 
-# Function to display movie recommendations
-def display_recommendations(movies, ratings, selected_movies):
-    st.write('## Recommended Movies')
-    for movie_id in selected_movies:
-        movie_title = movies.loc[movies['movieId'] == movie_id, 'title'].iloc[0]
-        st.write('- ' + movie_title)
-
 # Streamlit UI
 st.title('Movie Recommendation System')
 
@@ -45,8 +38,11 @@ search_query = st.text_input('Search for a movie')
 filtered_movies = filter_movies(movies, search_query)
 
 # Scroll bar for user to choose movies
-selected_movies = st.multiselect('Choose movies', filtered_movies['movieId'])
+selected_movies = st.multiselect('Choose movies', filtered_movies['title'])
 
 # Display recommended movies
 if st.button('Get Recommendations'):
-    display_recommendations(movies, ratings, selected_movies)
+    st.write('## Recommended Movies')
+    for movie_title in selected_movies:
+        movie_id = movies.loc[movies['title'] == movie_title, 'movieId'].iloc[0]
+        st.write('- ' + movie_title)
