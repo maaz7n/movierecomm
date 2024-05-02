@@ -1,37 +1,80 @@
 import streamlit as st
 import pandas as pd
+import base64
 
-# Set page background to a URL
-st.markdown(
-    """
+# Function to load the movie dataset
+@st.cache
+def load_data():
+    return pd.read_csv("movies.csv")
+
+# Function to calculate similarity based on genres
+def calculate_similarity(movie_genres_1, movie_genres_2):
+    if not movie_genres_1 or not movie_genres_2:
+        return 0  # If any of the genres is empty, return 0 similarity
+    try:
+        genres_1 = set(movie_genres_1.split('|'))
+        genres_2 = set(movie_genres_2.split('|'))
+    except AttributeError:
+        return 0  # If genres are not in the expected format, return 0 similarity
+    intersection = genres_1.intersection(genres_2)
+    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
+    return similarity
+
+# Function to get movie recommendations
+def get_recommendations(movie_title, movies_df, threshold=0.2):
+    movie_row = movies_df[movies_df['title'] == movie_title]
+    movie_genres = movie_row['genres'].values[0]
+    recommendations = []
+    for index, row in movies_df.iterrows():
+        if row['title'] != movie_title:
+            similarity = calculate_similarity(movie_genres, row['genres'])
+            if similarity >= threshold:
+                recommendations.append(row['title'])
+    return recommendations
+
+# Function to convert image to base64
+@st.cache(allow_output_mutation=True)
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+# Function to set background image from URL
+def set_background_image(url):
+    page_bg_img = '''
     <style>
-    body {
-        background-image: url("YOUR_BACKGROUND_IMAGE_URL");
+    .stApp {
+        background-image: url("%s");
         background-size: cover;
     }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+    ''' % url
+    st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Load data
-@st.cache
-def load_data():
-    movies = pd.read_csv("movies.csv")
-    ratings = pd.read_csv("ratings.csv")
-    return movies, ratings
+# Main function
+def main():
+    # Load data
+    movies_df = load_data()
 
-# Streamlit UI
-st.title('Movie Recommendation System')
+    # Set background image from URL
+    background_image_url = "https://example.com/background.jpg"  # Replace with your URL
+    set_background_image(background_image_url)
 
-# Load data
-movies, ratings = load_data()
+    # Streamlit UI
+    st.title('Movie Recommendation System')
 
-# Scroll bar for user to choose movies
-selected_movies = st.multiselect('Choose movies', movies['title'])
+    # Select a movie
+    selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
 
-# Display recommended movies
-if st.button('Get Recommendations'):
-    st.write('## Recommended Movies')
-    for movie_title in selected_movies:
-        st.write('- ' + movie_title)
+    # Get recommendations
+    if st.button('Get Recommendations'):
+        recommendations = get_recommendations(selected_movie, movies_df)
+        if recommendations:
+            st.write("### Recommendations")
+            for movie in recommendations:
+                st.write(f"- {movie}")
+        else:
+            st.write("No recommendations found for this movie.")
+
+if __name__ == "__main__":
+    main()
