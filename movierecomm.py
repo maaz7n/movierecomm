@@ -1,38 +1,52 @@
 import streamlit as st
 import pandas as pd
 
-# Load movies and ratings data
-movies = pd.read_csv("movies.csv")
-ratings = pd.read_csv("ratings.csv")
+# Set page background to a URL
+st.markdown(
+    """
+    <style>
+    body {
+        background-image: url("YOUR_BACKGROUND_IMAGE_URL");
+        background-size: cover;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-# Function to perform collaborative filtering
-def collaborative_filtering(user_id, n=10):
-    # Filter ratings for the given user
-    user_ratings = ratings[ratings['userId'] == user_id]
-    
-    # Merge user ratings with movie data
-    user_movie_ratings = pd.merge(user_ratings, movies, on='movieId')
-    
-    # Sort movies by rating in descending order
-    user_movie_ratings = user_movie_ratings.sort_values(by='rating', ascending=False)
-    
-    # Get top N recommended movies
-    top_movies = user_movie_ratings.head(n)
-    
-    return top_movies['title']
+# Load data
+@st.cache
+def load_data():
+    movies = pd.read_csv("movies.csv")
+    ratings = pd.read_csv("ratings.csv")
+    return movies, ratings
+
+# Function to filter movies based on search query
+def filter_movies(movies, search_query):
+    return movies[movies['title'].str.contains(search_query, case=False)]
+
+# Function to display movie recommendations
+def display_recommendations(movies, ratings, selected_movies):
+    st.write('## Recommended Movies')
+    for movie_id in selected_movies:
+        movie_title = movies.loc[movies['movieId'] == movie_id, 'title'].iloc[0]
+        st.write('- ' + movie_title)
 
 # Streamlit UI
 st.title('Movie Recommendation System')
 
-# User input for user ID
-user_id = st.number_input('Enter User ID', min_value=1, max_value=1000)
+# Load data
+movies, ratings = load_data()
 
-# Button to trigger recommendation
+# Search bar for user to search for movie names
+search_query = st.text_input('Search for a movie')
+
+# Filter movies based on search query
+filtered_movies = filter_movies(movies, search_query)
+
+# Scroll bar for user to choose movies
+selected_movies = st.multiselect('Choose movies', filtered_movies['movieId'])
+
+# Display recommended movies
 if st.button('Get Recommendations'):
-    # Perform collaborative filtering to get movie recommendations
-    recommended_movies = collaborative_filtering(user_id)
-    
-    # Display recommended movies
-    st.write('## Recommended Movies')
-    for movie in recommended_movies:
-        st.write('- ' + movie)
+    display_recommendations(movies, ratings, selected_movies)
