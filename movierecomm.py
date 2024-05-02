@@ -57,7 +57,7 @@ def main():
     movies_df = load_data()
 
     # Set background image from URL
-    background_image_url = "https://example.com/background.jpg"  # Replace with your URL
+    background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg"  # Replace with your URL
     set_background_image(background_image_url)
 
     # Streamlit UI
