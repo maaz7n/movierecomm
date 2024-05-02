@@ -6,7 +6,7 @@ st.markdown(
     """
     <style>
     body {
-        background-image: url("YOUR_BACKGROUND_IMAGE_URL");
+        background-image: url('https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg');
         background-size: cover;
     }
     </style>
@@ -41,11 +41,11 @@ st.title('Movie Recommendation System')
 # Load movies and ratings data
 movies, ratings = load_data()
 
-# Slider for user to select minimum rating
-min_rating = st.slider('Select minimum rating', min_value=1, max_value=5, value=3, step=1)
+# Scroll bar for user to select minimum rating
+min_rating = st.sidebar.slider('Select minimum rating', min_value=1, max_value=5, value=3, step=1)
 
 # Button to trigger recommendation
-if st.button('Get Recommendations'):
+if st.sidebar.button('Get Recommendations'):
     # Perform collaborative filtering to get movie recommendations
     recommended_movies = collaborative_filtering(movies, ratings, min_rating)
     # Display recommended movies
