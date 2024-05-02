@@ -6,7 +6,7 @@ st.markdown(
     """
     <style>
     body {
-        background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
+        background-image: url("YOUR_BACKGROUND_IMAGE_URL");
         background-size: cover;
     }
     </style>
@@ -22,11 +22,9 @@ def load_data():
     return movies, ratings
 
 # Function to perform collaborative filtering
-def collaborative_filtering(movies, ratings, min_rating=3, n=10):
-    # Filter movies by minimum rating
-    filtered_ratings = ratings[ratings['rating'] >= min_rating]
+def collaborative_filtering(movies, ratings, n=10):
     # Group ratings by movie and count number of ratings for each movie
-    movie_ratings_count = filtered_ratings.groupby('movieId').size().reset_index(name='rating_count')
+    movie_ratings_count = ratings.groupby('movieId').size().reset_index(name='rating_count')
     # Sort movies by rating count in descending order
     popular_movies = movie_ratings_count.sort_values(by='rating_count', ascending=False)
     # Get top N recommended movie IDs
@@ -44,12 +42,9 @@ movies, ratings = load_data()
 # Search bar for user to search for movie names
 search_query = st.text_input('Search for a movie')
 
-# Slider for user to select minimum rating
-min_rating = st.slider('Select minimum rating', min_value=1, max_value=5, value=3, step=1)
-
-# Filter movies based on search query and minimum rating
+# Filter movies based on search query
 filtered_movies = movies[movies['title'].str.contains(search_query, case=False)]
-filtered_movies = filtered_movies[filtered_movies['movieId'].isin(ratings[ratings['rating'] >= min_rating]['movieId'])]
+filtered_movies = filtered_movies[filtered_movies['movieId'].isin(ratings['movieId'])]
 
 # Display filtered movies
 st.write('## Filtered Movies')
