@@ -44,11 +44,14 @@ movies, ratings = load_data()
 # Search bar for user to search for movie names
 search_query = st.text_input('Search for a movie')
 
-# Filter movies based on search query
+# Slider for user to select minimum rating
+min_rating = st.slider('Select minimum rating', min_value=1, max_value=5, value=3, step=1)
+
+# Filter movies based on search query and minimum rating
 filtered_movies = movies[movies['title'].str.contains(search_query, case=False)]
+filtered_movies = filtered_movies[filtered_movies['movieId'].isin(ratings[ratings['rating'] >= min_rating]['movieId'])]
 
 # Display filtered movies
 st.write('## Filtered Movies')
 for movie in filtered_movies['title']:
     st.write('- ' + movie)
-
