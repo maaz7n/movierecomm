@@ -1,66 +1,62 @@
 import streamlit as st
 import pandas as pd
-from surprise import Dataset, Reader, SVD
-from surprise.model_selection import train_test_split
 
-# Function to load the movie dataset
-@st.cache
-def load_data():
-    return pd.read_csv("movies.csv")
-
-# Function to set background image from URL
-def set_background_image(url):
-    page_bg_img = '''
+# Set page background to a URL
+st.markdown(
+    """
     <style>
-    .stApp {
-        background-image: url("%s");
+    body {
+        background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
         background-size: cover;
     }
     </style>
-    ''' % url
-    st.markdown(page_bg_img, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-# Main function
-def main():
-    # Load data
-    movies_df = load_data()
+# Load movie ratings and movie data
+@st.cache
+def load_data():
+    ratings = pd.read_csv("ratings.csv")
+    movies = pd.read_csv("movies.csv")
+    return ratings, movies
 
-    # Set background image from URL
-    background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg"  # Replace with your URL
-    set_background_image(background_image_url)
+ratings, movies = load_data()
 
-    # Streamlit UI
-    st.title('Movie Recommendation System')
+# Function to get movie recommendations
+def get_recommendations(user_id, ratings, movies, n=10):
+    # Get movies rated by the user
+    user_ratings = ratings[ratings['userId'] == user_id]
+    user_rated_movie_ids = user_ratings['movieId'].tolist()
+    # Calculate average rating of user
+    avg_rating = user_ratings['rating'].mean()
+    # Get similar movies
+    similar_movies = pd.DataFrame(columns=['movieId', 'similarity'])
+    for movie_id in user_rated_movie_ids:
+        # Find movies similar to the rated movie
+        similar = ratings[ratings['movieId'] == movie_id].merge(ratings, on='userId')
+        similar = similar[similar['movieId_y'] != movie_id]
+        similar = similar.groupby('movieId_y').apply(lambda x: (x['rating_x'] * x['rating_y']).sum() / (x['rating_x'].pow(2).sum() ** 0.5 * x['rating_y'].pow(2).sum() ** 0.5)).reset_index(name='similarity')
+        similar_movies = similar_movies.append(similar, ignore_index=True)
+    # Filter out movies already rated by the user
+    similar_movies = similar_movies[~similar_movies['movieId'].isin(user_rated_movie_ids)]
+    # Get top N recommended movies
+    similar_movies = similar_movies.groupby('movieId').mean().reset_index().sort_values(by='similarity', ascending=False)
+    top_movie_ids = similar_movies.head(n)['movieId']
+    top_movies = movies[movies['movieId'].isin(top_movie_ids)]['title']
+    return top_movies
 
-    # Load Surprise dataset
-    reader = Reader(rating_scale=(0.5, 5))
-    data = Dataset.load_from_df(movies_df[['userId', 'movieId', 'rating']], reader)
+# Streamlit UI
+st.title('Movie Recommendation System')
 
-    # Split the data into train and test sets
-    trainset, testset = train_test_split(data, test_size=0.2)
+# Input for user to enter user ID
+user_id = st.number_input('Enter your user ID', min_value=1, max_value=610, value=1, step=1)
 
-    # Use SVD algorithm
-    algo = SVD()
-
-    # Train the algorithm on the trainset
-    algo.fit(trainset)
-
-    # Select a user
-    selected_user = st.selectbox('Select a user:', movies_df['userId'].unique())
-
-    # Get top recommendations for the selected user
-    top_n = 10
-    recommendations = {}
-    for movie_id in movies_df['movieId'].unique():
-        predicted_rating = algo.predict(selected_user, movie_id).est
-        recommendations[movie_id] = predicted_rating
-
-    top_recommendations = sorted(recommendations.items(), key=lambda x: x[1], reverse=True)[:top_n]
-
-    st.write("### Top Recommendations:")
-    for movie_id, rating in top_recommendations:
-        movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].values[0]
-        st.write(f"- {movie_title} (Predicted Rating: {rating:.2f})")
-
-if __name__ == "__main__":
-    main()
+# Button to trigger recommendation
+if st.button('Get Recommendations'):
+    # Get movie recommendations for the user
+    recommended_movies = get_recommendations(user_id, ratings, movies)
+    # Display recommended movies
+    st.write('## Recommended Movies')
+    for movie in recommended_movies:
+        st.write('- ' + movie)
