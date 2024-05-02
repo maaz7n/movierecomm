@@ -6,7 +6,7 @@ st.markdown(
     """
     <style>
     body {
-        background-image: url("https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg");
+        background-image: url("YOUR_BACKGROUND_IMAGE_URL");
         background-size: cover;
     }
     </style>
@@ -14,56 +14,41 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Load ratings and movies data
+# Load movies and ratings data
 @st.cache
 def load_data():
-    ratings = pd.read_csv("ratings.csv")
     movies = pd.read_csv("movies.csv")
-    return ratings, movies
+    ratings = pd.read_csv("ratings.csv")
+    return movies, ratings
 
-# Function to get movie recommendations
-def get_recommendations(movie_title, ratings, movies, n=10):
-    # Get movie ID for the given movie title
-    movie_id = movies[movies['title'].str.contains(movie_title, case=False)]['movieId'].values
-    if len(movie_id) == 0:
-        return None
-    # Get similar movies
-    similar_movies = pd.DataFrame(columns=['movieId', 'similarity'])
-    for m_id in movie_id:
-        # Find movies similar to the searched movie
-        similar = ratings[ratings['movieId'] == m_id].merge(ratings, on='userId')
-        if not similar.empty:
-            similar = similar.groupby('movieId_y').apply(lambda x: (x['rating_x'] * x['rating_y']).sum() / (x['rating_x'].pow(2).sum() ** 0.5 * x['rating_y'].pow(2).sum() ** 0.5)).reset_index(name='similarity')
-            similar_movies = similar_movies.append(similar, ignore_index=True)
-    # Get top N recommended movies
-    if not similar_movies.empty:
-        similar_movies = similar_movies.groupby('movieId').mean().reset_index().sort_values(by='similarity', ascending=False)
-        top_movie_ids = similar_movies.head(n)['movieId']
-        top_movies = movies[movies['movieId'].isin(top_movie_ids)]['title']
-        return top_movies
-    else:
-        return None
+# Function to perform collaborative filtering
+def collaborative_filtering(movies, ratings, min_rating=3, n=10):
+    # Filter movies by minimum rating
+    filtered_ratings = ratings[ratings['rating'] >= min_rating]
+    # Group ratings by movie and count number of ratings for each movie
+    movie_ratings_count = filtered_ratings.groupby('movieId').size().reset_index(name='rating_count')
+    # Sort movies by rating count in descending order
+    popular_movies = movie_ratings_count.sort_values(by='rating_count', ascending=False)
+    # Get top N recommended movie IDs
+    top_movie_ids = popular_movies.head(n)['movieId']
+    # Get movie titles corresponding to top movie IDs
+    top_movies = movies[movies['movieId'].isin(top_movie_ids)]['title']
+    return top_movies
 
 # Streamlit UI
 st.title('Movie Recommendation System')
 
-# Load ratings and movies data
-ratings, movies = load_data()
+# Load movies and ratings data
+movies, ratings = load_data()
 
-# Input for user to search for a movie
-search_query = st.text_input('Search for a movie')
+# Slider for user to select minimum rating
+min_rating = st.slider('Select minimum rating', min_value=1, max_value=5, value=3, step=1)
 
 # Button to trigger recommendation
 if st.button('Get Recommendations'):
-    if search_query:
-        # Get movie recommendations for the searched movie
-        recommended_movies = get_recommendations(search_query, ratings, movies)
-        if recommended_movies is not None:
-            # Display recommended movies
-            st.write('## Recommended Movies')
-            for movie in recommended_movies:
-                st.write('- ' + movie)
-        else:
-            st.write('No recommendations found for the searched movie.')
-    else:
-        st.write('Please enter a movie title to get recommendations.')
+    # Perform collaborative filtering to get movie recommendations
+    recommended_movies = collaborative_filtering(movies, ratings, min_rating)
+    # Display recommended movies
+    st.write('## Recommended Movies')
+    for movie in recommended_movies:
+        st.write('- ' + movie)
