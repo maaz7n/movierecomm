@@ -78,7 +78,7 @@ def calculate_similarity(movie_genres_1, movie_genres_2):
 
 # Function to get movie recommendations
 def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
-    movie_row = movies_df[movies_df['title'] == movie_title]
+    movie_row = movies_df[movies_df['genres'] == movie_title]
     movie_index = movie_row.index[0]
     similarity_scores = similarity_matrix[movie_index]  # Get similarity scores for the selected movie
     sorted_indices = np.argsort(similarity_scores)[::-1]  # Sort indices by similarity score in descending order
