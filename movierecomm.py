@@ -6,7 +6,7 @@ import streamlit as st
 # Load the movie dataset
 @st.cache
 def load_data():
-    return pd.read_csv("movie_dataset.csv")
+    return pd.read_csv("movies.csv")
 
 movies_df = load_data()
 
