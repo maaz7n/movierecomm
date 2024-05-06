@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 @st.cache
 def load_data():
     data = pd.read_csv("movies.csv")
-    return data.copy()
+    return 
 
 
 # Function to compute similarity matrix based on genres
