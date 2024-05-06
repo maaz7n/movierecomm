@@ -13,25 +13,15 @@ def load_data():
 # Function to compute similarity matrix based on genres
 def compute_similarity_matrix(data):
     try:
-        # Print the first few entries of the "genres" column
-        print("Genres column:", data['genres'].head())
+        # Drop rows with missing values
+        data.dropna(axis=0, inplace=True)
 
         # Extract genres from the "genres" column
         genres_list = data['genres'].tolist()
 
-        # Check if there are genres in the dataset
-        if not genres_list:
-            print("Error: No genres found in the dataset.")
-            return None
-
         # Create binary vectors representing presence/absence of genres
         vectorizer = CountVectorizer(binary=True)
         genre_matrix = vectorizer.fit_transform(genres_list)
-
-        # Check if genre matrix is empty
-        if genre_matrix.shape[0] == 0 or genre_matrix.shape[1] == 0:
-            print("Error: Genre matrix is empty.")
-            return None
 
         # Compute cosine similarity between genre vectors
         similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
@@ -43,6 +33,34 @@ def compute_similarity_matrix(data):
     except Exception as e:
         print("An error occurred while computing similarity matrix:", e)
         return None
+
+# Function to calculate similarity based on genres
+def calculate_similarity(movie_genres_1, movie_genres_2):
+    if not movie_genres_1 or not movie_genres_2:
+        return 0  # If any of the genres is empty, return 0 similarity
+    try:
+        genres_1 = set(movie_genres_1.split('|'))
+        genres_2 = set(movie_genres_2.split('|'))
+    except AttributeError:
+        return 0  # If genres are not in the expected format, return 0 similarity
+    intersection = genres_1.intersection(genres_2)
+    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
+    return similarity
+
+# Function to get movie recommendations
+def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
+    movie_row = movies_df[movies_df['title'] == movie_title]
+    if len(movie_row) == 0:
+        print(f"Error: Movie '{movie_title}' not found in the dataset.")
+        return []
+    movie_genres = movie_row['genres'].values[0]
+    recommendations = []
+    for index, row in movies_df.iterrows():
+        if row['title'] != movie_title:
+            similarity = calculate_similarity(movie_genres, row['genres'])
+            if isinstance(similarity, (int, float)) and not np.isnan(similarity) and similarity >= threshold:
+                recommendations.append(row['title'])
+    return recommendations
 
 # Function to convert image to base64
 @st.cache(allow_output_mutation=True)
@@ -63,35 +81,6 @@ def set_background_image(url):
     ''' % url
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Function to calculate similarity based on genres
-def calculate_similarity(movie_genres_1, movie_genres_2):
-    if not movie_genres_1 or not movie_genres_2:
-        return 0  # If any of the genres is empty, return 0 similarity
-    try:
-        genres_1 = set(movie_genres_1.split('|'))
-        genres_2 = set(movie_genres_2.split('|'))
-    except AttributeError:
-        return 0  # If genres are not in the expected format, return 0 similarity
-    intersection = genres_1.intersection(genres_2)
-    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
-    return similarity
-    
-# Function to get movie recommendations
-def get_recommendations(movie_title, movies_df, threshold=0.2):
-    movie_row = movies_df[movies_df['title'] == movie_title]
-    if len(movie_row) == 0:
-        print(f"Error: Movie '{movie_title}' not found in the dataset.")
-        return []
-    movie_genres = movie_row['genres'].values[0]
-    recommendations = []
-    for index, row in movies_df.iterrows():
-        if row['title'] != movie_title:
-            similarity = calculate_similarity(movie_genres, row['genres'])
-            if isinstance(similarity, (int, float)) and not np.isnan(similarity) and similarity >= threshold:
-                recommendations.append(row['title'])
-    return recommendations
-
-
 # Main function
 def main():
     # Load data
@@ -99,12 +88,6 @@ def main():
 
     # Compute similarity matrix
     similarity_matrix = compute_similarity_matrix(movies_df)
-
-    # Print the shape of the similarity matrix
-    if similarity_matrix is not None:
-        st.write("Shape of similarity matrix:", similarity_matrix.shape)
-    else:
-        st.write("An error occurred while computing the similarity matrix.")
 
     # Set background image from URL
     background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg" # Replace with your URL
