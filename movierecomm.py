@@ -1,14 +1,13 @@
-# Import necessary libraries
-import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
 import streamlit as st
+import pandas as pd
+import base64
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-# Load the movie dataset
+# Function to load the movie dataset
 @st.cache
 def load_data():
     return pd.read_csv("movies.csv")
-
-movies_df = load_data()
 
 # Function to compute similarity matrix based on genres
 def compute_similarity_matrix(data):
@@ -26,29 +25,78 @@ def compute_similarity_matrix(data):
     except Exception as e:
         print("An error occurred while computing similarity matrix:", e)
         return None
-similarity_matrix = compute_similarity_matrix(movies_df)
 
-# Streamlit UI
-st.title("Movie Recommendation System")
+# Function to calculate similarity based on genres
+def calculate_similarity(movie_genres_1, movie_genres_2):
+    if not movie_genres_1 or not movie_genres_2:
+        return 0  # If any of the genres is empty, return 0 similarity
+    try:
+        genres_1 = set(movie_genres_1.split('|'))
+        genres_2 = set(movie_genres_2.split('|'))
+    except AttributeError:
+        return 0  # If genres are not in the expected format, return 0 similarity
+    intersection = genres_1.intersection(genres_2)
+    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
+    return similarity
 
-# User input
-movie_title = st.text_input("Enter a movie title: ")
+# Function to get movie recommendations
+def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
+    movie_row = movies_df[movies_df['title'] == movie_title]
+    movie_index = movie_row.index[0]
+    recommendations = []
+    for index, row in movies_df.iterrows():
+        if index != movie_index:
+            similarity = similarity_matrix[movie_index, index]
+            if similarity >= threshold:
+                recommendations.append(row['title'])
+    return recommendations
 
-# Generate recommendations
-if movie_title.strip() != "":
-    # Find the index of the movie in the dataset
-    movie_index = movies_df[movies_df["genres"] == movie_title].index[0]
+# Function to convert image to base64
+@st.cache(allow_output_mutation=True)
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
+# Function to set background image from URL
+def set_background_image(url):
+    page_bg_img = '''
+    <style>
+    .stApp {
+        background-image: url("%s");
+        background-size: cover;
+    }
+    </style>
+    ''' % url
+    st.markdown(page_bg_img, unsafe_allow_html=True)
 
-    # Get similarity scores for the movie
-    similarity_scores = list(enumerate(similarity_matrix[movie_index]))
+# Main function
+def main():
+    # Load data
+    movies_df = load_data()
 
-    # Sort the movies based on similarity scores
-    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+    # Compute similarity matrix
+    similarity_matrix = compute_similarity_matrix(movies_df)
 
-    # Display top 5 similar movies
-    st.subheader("Top 5 Recommended Movies:")
-    for i in range(5):
-        recommended_movie_index = similarity_scores[i][0]
-        recommended_movie_title = movies_df.iloc[recommended_movie_index]["movie_title"]
-        st.write(f"{i+1}. {recommended_movie_title}")
+    # Set background image from URL
+    background_image_url = "https://example.com/background.jpg"  # Replace with your URL
+    set_background_image(background_image_url)
+
+    # Streamlit UI
+    st.title('Movie Recommendation System')
+
+    # Select a movie
+    selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
+
+    # Get recommendations
+    if st.button('Get Recommendations'):
+        recommendations = get_recommendations(selected_movie, movies_df, similarity_matrix)
+        if recommendations:
+            st.write("### Recommendations")
+            for movie in recommendations:
+                st.write(f"- {movie}")
+        else:
+            st.write("No recommendations found for this movie.")
+
+if __name__ == "__main__":
+    main()
