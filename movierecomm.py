@@ -37,7 +37,8 @@ movie_title = st.text_input("Enter a movie title: ")
 # Generate recommendations
 if movie_title.strip() != "":
     # Find the index of the movie in the dataset
-    movie_index = movies_df[movies_df["movie_title"] == movie_title].index[0]
+    movie_index = movies_df[movies_df["genres"] == movie_title].index[0]
+
 
     # Get similarity scores for the movie
     similarity_scores = list(enumerate(similarity_matrix[movie_index]))
