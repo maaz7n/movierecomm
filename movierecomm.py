@@ -16,9 +16,19 @@ def compute_similarity_matrix(data):
         # Extract genres from the "genres" column
         genres_list = data['genres'].tolist()
 
+        # Check if there are genres in the dataset
+        if not genres_list:
+            print("Error: No genres found in the dataset.")
+            return None
+
         # Create binary vectors representing presence/absence of genres
         vectorizer = CountVectorizer(binary=True)
         genre_matrix = vectorizer.fit_transform(genres_list)
+
+        # Check if genre matrix is empty
+        if genre_matrix.shape[0] == 0 or genre_matrix.shape[1] == 0:
+            print("Error: Genre matrix is empty.")
+            return None
 
         # Compute cosine similarity between genre vectors
         similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
@@ -30,6 +40,7 @@ def compute_similarity_matrix(data):
     except Exception as e:
         print("An error occurred while computing similarity matrix:", e)
         return None
+
 
 # Function to convert image to base64
 @st.cache(allow_output_mutation=True)
