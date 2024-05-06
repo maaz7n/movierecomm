@@ -46,10 +46,11 @@ def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2
     recommendations = []
     for index, row in movies_df.iterrows():
         if index != movie_index:
-            similarity = similarity_matrix[movie_index][index]  # Corrected indexing
+            similarity = similarity_matrix[index, movie_index]  # Corrected indexing
             if similarity >= threshold:
                 recommendations.append(row['title'])
     return recommendations
+
 
 # Function to convert image to base64
 @st.cache(allow_output_mutation=True)
