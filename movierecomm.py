@@ -88,9 +88,8 @@ def main():
     set_background_image(background_image_url)
 
     # Streamlit UI
-    st.title('Movie Recommendation System')
-    st.markdown("<h1 style='text-align: center; color: black; font-family: Times New Roman'>Movie Recommendation System</h1>", unsafe_allow_html=True)
-
+    st.title('MOVIE RECOMMENDATION SYSTEM')
+   
     # Select a movie
     selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
 
