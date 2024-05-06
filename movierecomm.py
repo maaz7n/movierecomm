@@ -10,14 +10,24 @@ def load_data():
 
 movies_df = load_data()
 
-# Compute similarity matrix
-def compute_similarity_matrix(data):
-    # Check the column names to ensure case sensitivity
-    print(data.columns)
-    data_numeric = data.drop(columns=["movie_title"])
-    similarity_matrix = cosine_similarity(data_numeric, data_numeric)
-    return similarity_matrix
-
+# Function to calculate similarity based on genres using sklearn
+def calculate_similarity(movie_genres_1, movie_genres_2):
+    if not movie_genres_1 or not movie_genres_2:
+        return 0  # If any of the genres is empty, return 0 similarity
+    try:
+        genres_1 = set(movie_genres_1.split('|'))
+        genres_2 = set(movie_genres_2.split('|'))
+    except AttributeError:
+        return 0  # If genres are not in the expected format, return 0 similarity
+    # Create binary vectors representing presence/absence of genres
+    vectorizer = CountVectorizer(binary=True)
+    vectorizer.fit(list(genres_1.union(genres_2)))
+    vec_1 = vectorizer.transform([movie_genres_1])
+    vec_2 = vectorizer.transform([movie_genres_2])
+    # Compute cosine similarity between the vectors
+    similarity_matrix = cosine_similarity(vec_1, vec_2)
+    similarity = similarity_matrix[0, 0]
+    return similarity
 
 similarity_matrix = compute_similarity_matrix(movies_df)
 
