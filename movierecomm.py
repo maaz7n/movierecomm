@@ -90,6 +90,7 @@ def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2
                 recommendations.append(movies_df.iloc[index]['title'])
     return recommendations
 
+
 # Main function
 def main():
     # Load data
