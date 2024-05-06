@@ -72,6 +72,11 @@ def set_background_image(url):
         background-image: url("%s");
         background-size: cover;
     }
+    .stTitle {
+        font-family: 'Arial', sans-serif;
+        font-size: 36px;
+        font-weight: bold;
+    }
     </style>
     ''' % url
     st.markdown(page_bg_img, unsafe_allow_html=True)
@@ -106,4 +111,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
