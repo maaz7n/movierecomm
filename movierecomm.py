@@ -73,7 +73,7 @@ def set_background_image(url):
         background-size: cover;
     }
     .stTitle {
-        font-family: 'Arial', sans-serif;
+        font-family: 'Times New Roman', Times, serif;
         font-size: 36px;
         font-weight: bold;
     }
@@ -111,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
