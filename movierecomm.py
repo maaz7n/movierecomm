@@ -6,12 +6,11 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Function to load the movie dataset
-@st.cache(allow_output_mutation=True)
+@st.cache
 def load_data():
     return pd.read_csv("movies.csv")
 
 # Function to compute similarity matrix based on genres
-@st.cache(allow_output_mutation=True)
 def compute_similarity_matrix(data):
     try:
         # Extract genres from the "genres" column
@@ -25,11 +24,11 @@ def compute_similarity_matrix(data):
         similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
         
         # Debugging: Print shape of the similarity matrix
-        st.write("Shape of similarity matrix:", similarity_matrix.shape)
+        print("Shape of similarity matrix:", similarity_matrix.shape)
         
         return similarity_matrix
     except Exception as e:
-        st.error("An error occurred while computing similarity matrix:", e)
+        print("An error occurred while computing similarity matrix:", e)
         return None
 
 # Function to calculate similarity based on genres
@@ -53,7 +52,7 @@ def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2
     for index, row in movies_df.iterrows():
         if row['title'] != movie_title:
             similarity = calculate_similarity(movie_genres, row['genres'])
-            if isinstance(similarity, (int, float)) and similarity >= threshold:
+            if similarity >= threshold:
                 recommendations.append(row['title'])
     return recommendations
 
