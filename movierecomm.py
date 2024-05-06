@@ -37,7 +37,7 @@ if movie_title.strip() != "":
 
     # Display top 5 similar movies
     st.subheader("Top 5 Recommended Movies:")
-    for i in range(1, 6):
+    for i in range(5):
         recommended_movie_index = similarity_scores[i][0]
         recommended_movie_title = movies_df.iloc[recommended_movie_index]["movie_title"]
-        st.write(f"{i}. {recommended_movie_title}")
+        st.write(f"{i+1}. {recommended_movie_title}")
