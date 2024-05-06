@@ -22,36 +22,6 @@ def compute_similarity_matrix(data):
 
         # Compute cosine similarity between genre vectors
         similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
-        return similarity_matrix
-    except Exception as e:
-        print("An error occurred while computing similarity matrix:", e)
-        return None
-
-# Function to calculate similarity based on genres
-def calculate_similarity(movie_genres_1, movie_genres_2):
-    if not movie_genres_1 or not movie_genres_2:
-        return 0  # If any of the genres is empty, return 0 similarity
-    try:
-        genres_1 = set(movie_genres_1.split('|'))
-        genres_2 = set(movie_genres_2.split('|'))
-    except AttributeError:
-        return 0  # If genres are not in the expected format, return 0 similarity
-    intersection = genres_1.intersection(genres_2)
-    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
-    return similarity
-
-# Function to compute similarity matrix based on genres
-def compute_similarity_matrix(data):
-    try:
-        # Extract genres from the "genres" column
-        genres_list = data['genres'].tolist()
-
-        # Create binary vectors representing presence/absence of genres
-        vectorizer = CountVectorizer(binary=True)
-        genre_matrix = vectorizer.fit_transform(genres_list)
-
-        # Compute cosine similarity between genre vectors
-        similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
         
         # Debugging: Print shape of the similarity matrix
         print("Shape of similarity matrix:", similarity_matrix.shape)
@@ -60,8 +30,6 @@ def compute_similarity_matrix(data):
     except Exception as e:
         print("An error occurred while computing similarity matrix:", e)
         return None
-
-
 
 # Function to convert image to base64
 @st.cache(allow_output_mutation=True)
@@ -82,6 +50,33 @@ def set_background_image(url):
     ''' % url
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
+# Function to calculate similarity based on genres
+def calculate_similarity(movie_genres_1, movie_genres_2):
+    if not movie_genres_1 or not movie_genres_2:
+        return 0  # If any of the genres is empty, return 0 similarity
+    try:
+        genres_1 = set(movie_genres_1.split('|'))
+        genres_2 = set(movie_genres_2.split('|'))
+    except AttributeError:
+        return 0  # If genres are not in the expected format, return 0 similarity
+    intersection = genres_1.intersection(genres_2)
+    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
+    return similarity
+
+# Function to get movie recommendations
+def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
+    movie_row = movies_df[movies_df['title'] == movie_title]
+    movie_index = movie_row.index[0]
+    similarity_scores = similarity_matrix[movie_index]  # Get similarity scores for the selected movie
+    sorted_indices = np.argsort(similarity_scores)[::-1]  # Sort indices by similarity score in descending order
+    recommendations = []
+    for index in sorted_indices:
+        if index != movie_index:
+            similarity = similarity_scores[index]
+            if similarity >= threshold:
+                recommendations.append(movies_df.iloc[index]['title'])
+    return recommendations
+
 # Main function
 def main():
     # Load data
@@ -89,6 +84,12 @@ def main():
 
     # Compute similarity matrix
     similarity_matrix = compute_similarity_matrix(movies_df)
+
+    # Print the shape of the similarity matrix
+    if similarity_matrix is not None:
+        st.write("Shape of similarity matrix:", similarity_matrix.shape)
+    else:
+        st.write("An error occurred while computing the similarity matrix.")
 
     # Set background image from URL
     background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg" # Replace with your URL
