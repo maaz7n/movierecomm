@@ -75,21 +75,21 @@ def calculate_similarity(movie_genres_1, movie_genres_2):
     intersection = genres_1.intersection(genres_2)
     similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
     return similarity
-
+    
 # Function to get movie recommendations
-def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
-    movie_row = movies_df[movies_df['genres'] == movie_title]
-    movie_index = movie_row.index[0]
-    similarity_scores = similarity_matrix[movie_index]  # Get similarity scores for the selected movie
-    sorted_indices = np.argsort(similarity_scores)[::-1]  # Sort indices by similarity score in descending order
+def get_recommendations(movie_title, movies_df, threshold=0.2):
+    movie_row = movies_df[movies_df['title'] == movie_title]
+    if len(movie_row) == 0:
+        print(f"Error: Movie '{movie_title}' not found in the dataset.")
+        return []
+    movie_genres = movie_row['genres'].values[0]
     recommendations = []
-    for index in sorted_indices:
-        if index != movie_index:
-            similarity = similarity_scores[index]
+    for index, row in movies_df.iterrows():
+        if row['title'] != movie_title:
+            similarity = calculate_similarity(movie_genres, row['genres'])
             if similarity >= threshold:
-                recommendations.append(movies_df.iloc[index]['title'])
+                recommendations.append(row['title'])
     return recommendations
-
 
 # Main function
 def main():
