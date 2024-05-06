@@ -13,6 +13,9 @@ def load_data():
 # Function to compute similarity matrix based on genres
 def compute_similarity_matrix(data):
     try:
+        # Print the first few entries of the "genres" column
+        print("Genres column:", data['genres'].head())
+
         # Extract genres from the "genres" column
         genres_list = data['genres'].tolist()
 
@@ -40,7 +43,6 @@ def compute_similarity_matrix(data):
     except Exception as e:
         print("An error occurred while computing similarity matrix:", e)
         return None
-
 
 # Function to convert image to base64
 @st.cache(allow_output_mutation=True)
