@@ -6,9 +6,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Function to load the movie dataset
-@st.cache
+@st.cache(allow_output_mutation=True)
 def load_data():
-    return pd.read_csv("movies.csv")
+    return pd.read_csv("movies.csv").copy()
 
 # Function to compute similarity matrix based on genres
 def compute_similarity_matrix(data):
@@ -52,7 +52,7 @@ def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2
     for index, row in movies_df.iterrows():
         if row['title'] != movie_title:
             similarity = calculate_similarity(movie_genres, row['genres'])
-            if similarity >= threshold:
+            if isinstance(similarity, (int, float)) and similarity >= threshold:
                 recommendations.append(row['title'])
     return recommendations
 
@@ -89,6 +89,7 @@ def main():
 
     # Streamlit UI
     st.title('Movie Recommendation System')
+    st.markdown("<h1 style='text-align: center; color: black; font-family: Times New Roman'>Movie Recommendation System</h1>", unsafe_allow_html=True)
 
     # Select a movie
     selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
