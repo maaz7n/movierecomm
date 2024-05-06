@@ -12,9 +12,12 @@ movies_df = load_data()
 
 # Compute similarity matrix
 def compute_similarity_matrix(data):
+    # Check the column names to ensure case sensitivity
+    print(data.columns)
     data_numeric = data.drop(columns=["movie_title"])
     similarity_matrix = cosine_similarity(data_numeric, data_numeric)
     return similarity_matrix
+
 
 similarity_matrix = compute_similarity_matrix(movies_df)
 
