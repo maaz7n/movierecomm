@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import base64
+import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -43,12 +44,14 @@ def calculate_similarity(movie_genres_1, movie_genres_2):
 def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
     movie_row = movies_df[movies_df['title'] == movie_title]
     movie_index = movie_row.index[0]
+    similarity_scores = similarity_matrix[movie_index]  # Get similarity scores for the selected movie
+    sorted_indices = np.argsort(similarity_scores)[::-1]  # Sort indices by similarity score in descending order
     recommendations = []
-    for index, row in movies_df.iterrows():
+    for index in sorted_indices:
         if index != movie_index:
-            similarity = similarity_matrix[movie_index, index]  # Corrected indexing
+            similarity = similarity_scores[index]
             if similarity >= threshold:
-                recommendations.append(row['title'])
+                recommendations.append(movies_df.iloc[index]['title'])
     return recommendations
 
 
