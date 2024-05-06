@@ -6,17 +6,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Function to load the movie dataset
-@st.cache
+@st.cache(allow_output_mutation=True)
 def load_data():
-  return pd.read_csv("movies.csv")
-
+    return pd.read_csv("movies.csv")
 
 # Function to compute similarity matrix based on genres
+@st.cache(allow_output_mutation=True)
 def compute_similarity_matrix(data):
     try:
-        # Drop rows with missing values
-        data.dropna(axis=0, inplace=True)
-
         # Extract genres from the "genres" column
         genres_list = data['genres'].tolist()
 
@@ -28,11 +25,11 @@ def compute_similarity_matrix(data):
         similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
         
         # Debugging: Print shape of the similarity matrix
-        print("Shape of similarity matrix:", similarity_matrix.shape)
+        st.write("Shape of similarity matrix:", similarity_matrix.shape)
         
         return similarity_matrix
     except Exception as e:
-        print("An error occurred while computing similarity matrix:", e)
+        st.error("An error occurred while computing similarity matrix:", e)
         return None
 
 # Function to calculate similarity based on genres
@@ -51,15 +48,12 @@ def calculate_similarity(movie_genres_1, movie_genres_2):
 # Function to get movie recommendations
 def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
     movie_row = movies_df[movies_df['title'] == movie_title]
-    if len(movie_row) == 0:
-        print(f"Error: Movie '{movie_title}' not found in the dataset.")
-        return []
     movie_genres = movie_row['genres'].values[0]
     recommendations = []
     for index, row in movies_df.iterrows():
         if row['title'] != movie_title:
             similarity = calculate_similarity(movie_genres, row['genres'])
-            if isinstance(similarity, (int, float)) and not np.isnan(similarity) and similarity >= threshold:
+            if isinstance(similarity, (int, float)) and similarity >= threshold:
                 recommendations.append(row['title'])
     return recommendations
 
@@ -112,3 +106,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
