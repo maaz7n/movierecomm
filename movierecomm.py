@@ -87,9 +87,10 @@ def get_recommendations(movie_title, movies_df, threshold=0.2):
     for index, row in movies_df.iterrows():
         if row['title'] != movie_title:
             similarity = calculate_similarity(movie_genres, row['genres'])
-            if similarity >= threshold:
+            if isinstance(similarity, (int, float)) and similarity >= threshold:
                 recommendations.append(row['title'])
     return recommendations
+
 
 # Main function
 def main():
