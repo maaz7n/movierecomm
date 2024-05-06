@@ -88,7 +88,7 @@ def main():
     set_background_image(background_image_url)
 
     # Streamlit UI
-    st.title('MOVIE RECOMMENDATION SYSTEM')
+    st.title('Movie Recommendation System')
    
     # Select a movie
     selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
