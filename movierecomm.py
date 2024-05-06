@@ -40,24 +40,27 @@ def calculate_similarity(movie_genres_1, movie_genres_2):
     similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
     return similarity
 
-# Function to get movie recommendations
-def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
-    movie_row = movies_df[movies_df['title'] == movie_title]
-    movie_index = movie_row.index[0]
-    
-    # Debugging: Print shape of the similarity matrix
-    print("Shape of similarity matrix:", similarity_matrix.shape)
-    
-    similarity_scores = similarity_matrix[movie_index]  # Get similarity scores for the selected movie
-    
-    sorted_indices = np.argsort(similarity_scores)[::-1]  # Sort indices by similarity score in descending order
-    recommendations = []
-    for index in sorted_indices:
-        if index != movie_index:
-            similarity = similarity_scores[index]
-            if similarity >= threshold:
-                recommendations.append(movies_df.iloc[index]['title'])
-    return recommendations
+# Function to compute similarity matrix based on genres
+def compute_similarity_matrix(data):
+    try:
+        # Extract genres from the "genres" column
+        genres_list = data['genres'].tolist()
+
+        # Create binary vectors representing presence/absence of genres
+        vectorizer = CountVectorizer(binary=True)
+        genre_matrix = vectorizer.fit_transform(genres_list)
+
+        # Compute cosine similarity between genre vectors
+        similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
+        
+        # Debugging: Print shape of the similarity matrix
+        print("Shape of similarity matrix:", similarity_matrix.shape)
+        
+        return similarity_matrix
+    except Exception as e:
+        print("An error occurred while computing similarity matrix:", e)
+        return None
+
 
 
 # Function to convert image to base64
