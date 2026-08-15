@@ -89,6 +89,7 @@ def main():
 
     # Streamlit UI
     st.title('Movie Recommendation System')
+    st.subheader('Find movies similar to your favorites based on genre similarity')
    
     # Select a movie
     selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
