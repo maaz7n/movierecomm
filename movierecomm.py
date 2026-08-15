@@ -1,107 +1,192 @@
-import streamlit as st
-import pandas as pd
 import base64
-import numpy as np
+
+import pandas as pd
+import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Function to load the movie dataset
-@st.cache(allow_output_mutation=True)
+
+st.set_page_config(
+    page_title="MovieMatch",
+    page_icon="🎬",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
+
+@st.cache_data
 def load_data():
     return pd.read_csv("movies.csv").copy()
 
-# Function to compute similarity matrix based on genres
-def compute_similarity_matrix(data):
-    try:
-        # Extract genres from the "genres" column
-        genres_list = data['genres'].tolist()
 
-        # Create binary vectors representing presence/absence of genres
-        vectorizer = CountVectorizer(binary=True)
-        genre_matrix = vectorizer.fit_transform(genres_list)
-
-        # Compute cosine similarity between genre vectors
-        similarity_matrix = cosine_similarity(genre_matrix, genre_matrix)
-        
-        # Debugging: Print shape of the similarity matrix
-        print("Shape of similarity matrix:", similarity_matrix.shape)
-        
-        return similarity_matrix
-    except Exception as e:
-        print("An error occurred while computing similarity matrix:", e)
-        return None
-
-# Function to calculate similarity based on genres
 def calculate_similarity(movie_genres_1, movie_genres_2):
     if not movie_genres_1 or not movie_genres_2:
-        return 0  # If any of the genres is empty, return 0 similarity
-    try:
-        genres_1 = set(movie_genres_1.split('|'))
-        genres_2 = set(movie_genres_2.split('|'))
-    except AttributeError:
-        return 0  # If genres are not in the expected format, return 0 similarity
+        return 0.0
+    genres_1 = set(str(movie_genres_1).split("|"))
+    genres_2 = set(str(movie_genres_2).split("|"))
+    genres_1.discard("nan")
+    genres_2.discard("nan")
+    if not genres_1 or not genres_2:
+        return 0.0
     intersection = genres_1.intersection(genres_2)
-    similarity = len(intersection) / (len(genres_1) + len(genres_2) - len(intersection))
-    return similarity
+    return len(intersection) / len(genres_1.union(genres_2))
 
-# Function to get movie recommendations
-def get_recommendations(movie_title, movies_df, similarity_matrix, threshold=0.2):
-    movie_row = movies_df[movies_df['title'] == movie_title]
-    movie_genres = movie_row['genres'].values[0]
+
+def get_recommendations(movie_title, movies_df, threshold=0.2, limit=12):
+    movie_rows = movies_df[movies_df["title"] == movie_title]
+    if movie_rows.empty:
+        return []
+
+    movie_genres = movie_rows.iloc[0]["genres"]
     recommendations = []
-    for index, row in movies_df.iterrows():
-        if row['title'] != movie_title:
-            similarity = calculate_similarity(movie_genres, row['genres'])
-            if isinstance(similarity, (int, float)) and similarity >= threshold:
-                recommendations.append(row['title'])
-    return recommendations
 
-# Function to convert image to base64
-@st.cache(allow_output_mutation=True)
+    for _, row in movies_df.iterrows():
+        if row["title"] == movie_title:
+            continue
+        similarity = calculate_similarity(movie_genres, row["genres"])
+        if similarity >= threshold:
+            recommendations.append(
+                {
+                    "title": row["title"],
+                    "genres": str(row["genres"]),
+                    "score": similarity,
+                }
+            )
+
+    return sorted(recommendations, key=lambda item: item["score"], reverse=True)[:limit]
+
+
 def get_base64_of_bin_file(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+    with open(bin_file, "rb") as file:
+        return base64.b64encode(file.read()).decode()
 
-# Function to set background image from URL
-def set_background_image(url):
-    page_bg_img = '''
-    <style>
-    .stApp {
-        background-image: url("%s");
-        background-size: cover;
-    }
-    </style>
-    ''' % url
-    st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Main function
+def set_background_image(path):
+    encoded = get_base64_of_bin_file(path)
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: linear-gradient(rgba(8, 10, 18, 0.78), rgba(8, 10, 18, 0.94)),
+                              url("data:image/jpeg;base64,{encoded}");
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }}
+        .block-container {{
+            max-width: 1100px;
+            padding-top: 3rem;
+            padding-bottom: 4rem;
+        }}
+        .hero {{
+            text-align: center;
+            padding: 2rem 1rem 1.5rem;
+        }}
+        .hero h1 {{
+            font-size: clamp(2.4rem, 6vw, 4.5rem);
+            margin-bottom: .35rem;
+            letter-spacing: -0.04em;
+        }}
+        .hero p {{
+            color: #b7bdca;
+            font-size: 1.1rem;
+            margin: 0 auto;
+            max-width: 650px;
+        }}
+        .movie-card {{
+            padding: 1.25rem;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 16px;
+            background: rgba(18, 21, 31, .78);
+            min-height: 145px;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }}
+        .movie-title {{
+            font-size: 1.08rem;
+            font-weight: 700;
+            margin-bottom: .65rem;
+        }}
+        .genre {{
+            display: inline-block;
+            padding: .22rem .55rem;
+            margin: .15rem .2rem .15rem 0;
+            border-radius: 999px;
+            background: rgba(255,255,255,.08);
+            color: #cbd0db;
+            font-size: .76rem;
+        }}
+        .score {{
+            color: #9ca3af;
+            font-size: .78rem;
+            margin-top: .7rem;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def main():
-    # Load data
     movies_df = load_data()
+    set_background_image("background.jpg")
 
-    # Compute similarity matrix
-    similarity_matrix = compute_similarity_matrix(movies_df)
+    st.markdown(
+        """
+        <div class="hero">
+            <h1>🎬 MovieMatch</h1>
+            <p>Pick a movie you love and discover films with a similar vibe.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Set background image from URL
-    background_image_url = "https://raw.githubusercontent.com/maaz7n/movierecomm/main/background.jpg" # Replace with your URL
-    set_background_image(background_image_url)
+    movies = sorted(movies_df["title"].dropna().unique().tolist())
+    selected_movie = st.selectbox(
+        "What are you in the mood for?",
+        movies,
+        index=None,
+        placeholder="Search for a movie...",
+    )
 
-    # Streamlit UI
-    st.title('Movie Recommendation System')
-   
-    # Select a movie
-    selected_movie = st.selectbox('Select a movie:', movies_df['title'].values)
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.caption(f"{len(movies):,} movies available")
+    with col2:
+        find_movies = st.button("✨ Find movies", type="primary", use_container_width=True)
 
-    # Get recommendations
-    if st.button('Get Recommendations'):
-        recommendations = get_recommendations(selected_movie, movies_df, similarity_matrix)
-        if recommendations:
-            st.write("### Recommendations")
-            for movie in recommendations:
-                st.write(f"- {movie}")
-        else:
-            st.write("No recommendations found for this movie.")
+    if find_movies:
+        if not selected_movie:
+            st.warning("Choose a movie first, then we'll find your matches.")
+            return
+
+        with st.spinner("Finding movies with a similar vibe..."):
+            recommendations = get_recommendations(selected_movie, movies_df)
+
+        st.markdown(f"### Movies like **{selected_movie}**")
+
+        if not recommendations:
+            st.info("No close matches found. Try another movie with more genres.")
+            return
+
+        st.caption(f"Top {len(recommendations)} matches, ranked by genre similarity")
+        columns = st.columns(3)
+
+        for index, movie in enumerate(recommendations):
+            with columns[index % 3]:
+                genres = [genre for genre in movie["genres"].split("|") if genre and genre != "nan"]
+                genre_html = "".join(f'<span class="genre">{genre}</span>' for genre in genres[:4])
+                st.markdown(
+                    f"""
+                    <div class="movie-card">
+                        <div class="movie-title">{movie['title']}</div>
+                        <div>{genre_html}</div>
+                        <div class="score">{movie['score']:.0%} genre match</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
 
 if __name__ == "__main__":
     main()
